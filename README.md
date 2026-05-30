@@ -1,8 +1,8 @@
-# Online Quiz & Assessment Platform 🎓
+# Online Quiz & Assessment Platform 
 
 A comprehensive, scalable digital solution designed to conduct interactive, timed MCQ-based assessments efficiently. This platform automates the assessment process, offering instant result generation, performance tracking, and a secure environment for educational institutions and organizations.
 
-## 🌟 Key Features
+##  Key Features
 
 * **Secure User Authentication**: Role-based access for Participants and Administrators.
 * **Timed Quiz Functionality**: Client and server-side timer validation with auto-submit capabilities.
@@ -24,7 +24,7 @@ A comprehensive, scalable digital solution designed to conduct interactive, time
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 Follow these instructions to set up the project locally on your machine.
 
@@ -67,7 +67,7 @@ Follow these instructions to set up the project locally on your machine.
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```text
 QuizPlatform/
@@ -85,5 +85,5 @@ QuizPlatform/
     └── package.json
 ```
 
-## 📜 License
+##  License
 This project was built as an Internship Assignment. All rights reserved.
