@@ -15,6 +15,8 @@ import QuizArea from './pages/QuizArea';
 import Leaderboard from './pages/Leaderboard';
 import AdminPanel from './pages/AdminPanel';
 
+import AdminPrompt from './pages/AdminPrompt';
+
 function App() {
   return (
     <div className="app-container">
@@ -25,9 +27,10 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/quiz" element={<QuizArea />} />
+          <Route path="/quiz/:quizId" element={<QuizArea />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin/generate" element={<AdminPrompt />} />
         </Routes>
       </main>
       <Footer />

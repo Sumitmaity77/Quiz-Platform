@@ -60,14 +60,31 @@ h1, h2, h3 {
 
 .nav-links a {
   text-decoration: none;
-  color: #fff;
-  font-weight: 600;
-  transition: opacity 0.2s;
+  color: #1f2937;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
+}
+
+.nav-links a svg{
+  color: #764ba2;
+  font-size: 1.2rem;
 }
 
 .nav-links a:hover {
-  opacity: 0.8;
+  background: rgba(118, 75, 162, 0.12);
+  color: #764ba2;
+  transform: translateY(-1px);
 }
+
+.nav-links a:hover svg {
+  color: #FF416C;
+}
+
 
 .main-content {
   flex: 1;
@@ -135,6 +152,20 @@ h1, h2, h3 {
 .form-group {
   margin-bottom: 1.5rem;
   text-align: left;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.config-panel {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
 }
 
 .form-group label {
@@ -249,4 +280,251 @@ h1, h2, h3 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
   color: #667eea;
+}
+
+/* =========================
+   PROFESSIONAL MOBILE NAVBAR
+========================= */
+
+.menu-btn {
+
+  display: none;
+
+  background: transparent;
+
+  border: none;
+
+  color: white;
+
+  font-size: 1.4rem;
+
+  cursor: pointer;
+}
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+
+  .header {
+
+    padding: 0.9rem 1rem;
+
+    position: relative;
+  }
+
+  .header h1 {
+
+    font-size: 1.3rem !important;
+  }
+
+  .menu-btn {
+
+    display: block;
+
+    z-index: 1001;
+  }
+
+  .nav-links {
+
+    position: absolute;
+
+    top: 75px;
+
+    right: 15px;
+
+    width: 240px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.4rem;
+
+    background: rgba(255,255,255,0.18);
+
+    backdrop-filter: blur(18px);
+
+    border: 1px solid rgba(255,255,255,0.25);
+
+    border-radius: 20px;
+
+    padding: 1rem;
+
+    box-shadow:
+      0 10px 30px rgba(0,0,0,0.18);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    transform:
+      translateY(-10px)
+      scale(0.95);
+
+    transition: all 0.25s ease;
+  }
+
+  .nav-links.active {
+
+    opacity: 1;
+
+    visibility: visible;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+
+  .nav-links a {
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #1f2937;
+    text-decoration: none;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    transition: 0.2s;
+  }
+
+  .nav-links a:hover {
+    background:
+      rgba(255,255,255,0.15);
+  }
+
+  .user-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 0.7rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .username {
+
+    text-align: center;
+
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+  }
+
+  /* OTHER MOBILE FIXES */
+
+  .glass-card {
+
+    padding: 1.2rem;
+
+    border-radius: 18px;
+  }
+
+  .dashboard-grid {
+
+    grid-template-columns: 1fr;
+
+    gap: 1rem;
+  }
+
+  .question-text {
+
+    font-size: 1.1rem;
+  }
+
+  .option-btn {
+
+    font-size: 0.95rem;
+
+    padding: 1rem;
+  }
+
+  .leaderboard-table th,
+  .leaderboard-table td {
+
+    font-size: 0.85rem;
+
+    padding: 0.7rem;
+  }
+
+  .main-content {
+
+    padding: 1rem;
+  }
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.footer-link {
+
+  text-decoration: none;
+
+  color: #555;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  font-weight: 600;
+
+  transition: 0.25s;
+}
+
+.footer-link:hover {
+
+  color: #764ba2;
+
+  transform: translateX(4px);
+}
+
+.social-icon {
+
+  width: 45px;
+
+  height: 45px;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.7);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #764ba2;
+
+  font-size: 1.2rem;
+
+  transition: 0.3s;
+}
+
+.social-icon:hover {
+
+  background:
+    linear-gradient(
+      135deg,
+      #667eea,
+      #764ba2
+    );
+
+  color: white;
+
+  transform:
+    translateY(-3px)
+    scale(1.05);
 }

@@ -12,12 +12,14 @@ export default function Register() {
     setLoading(true);
     try {
       const res = await api.post('/auth/register', formData);
-      console.log('Registration Success:', res.data);
-      alert('Registration successful! Please login.');
-      navigate('/login');
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      window.dispatchEvent(new Event('auth-changed'));
+      alert('Registration successful!');
+      navigate('/dashboard');
     } catch (error) {
       console.error('Registration failed', error);
-      alert('Failed to register. Ensure backend is running.');
+      alert(error.response?.data?.message || error.response?.data?.error || 'Failed to register. Ensure backend and MongoDB are running.');
     } finally {
       setLoading(false);
     }
@@ -37,7 +39,7 @@ export default function Register() {
         </div>
         <div className="form-group">
           <label>Password</label>
-          <input type="password" className="form-control" placeholder="••••••••" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required />
+          <input type="password" className="form-control" placeholder="Password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required />
         </div>
         <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={loading}>
           {loading ? 'Creating Account...' : 'Register'}

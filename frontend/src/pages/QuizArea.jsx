@@ -1,47 +1,301 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FaClock, FaArrowRight } from 'react-icons/fa';
-
-const MOCK_QUESTIONS = [
-  { id: 1, text: 'What is the virtual DOM in React?', options: ['A direct copy of the actual DOM', 'A lightweight JavaScript representation of the DOM', 'A new HTML standard', 'A CSS framework'], correct: 1 },
-  { id: 2, text: 'Which hook is used for side effects in functional components?', options: ['useState', 'useReducer', 'useEffect', 'useMemo'], correct: 2 },
-  { id: 3, text: 'What is JSX?', options: ['A syntax extension for JavaScript', 'A new programming language', 'A database query language', 'A styling preprocessor'], correct: 0 },
-];
+import api from '../api/api';
 
 export default function QuizArea() {
+  const { quizId } = useParams();
   const [currentQ, setCurrentQ] = useState(0);
   const [selected, setSelected] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [quiz, setQuiz] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState([]);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [showReview, setShowReview] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (timeLeft <= 0) {
-      alert("Time's up! Auto-submitting your quiz.");
-      navigate('/leaderboard');
-      return;
-    }
+    const fetchQuiz = async () => {
+      try {
+        const [quizRes, questionRes] = await Promise.all([
+          api.get(`/quizzes/${quizId}`),
+          api.get(`/quizzes/${quizId}/questions`)
+        ]);
+        setQuiz(quizRes.data);
+        setQuestions(questionRes.data);
+        setTimeLeft((quizRes.data.durationMinutes || 1) * 60);
+      } catch (error) {
+        console.error('Failed to load quiz:', error);
+        alert(error.response?.data?.error || 'Failed to load quiz.');
+        navigate('/dashboard');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuiz();
+  }, [quizId, navigate]);
+
+  useEffect(() => {
+    if (loading || timeLeft <= 0) return;
     const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, navigate]);
+  }, [loading, timeLeft]);
 
-  const handleNext = () => {
-    if (currentQ < MOCK_QUESTIONS.length - 1) {
-      setCurrentQ(prev => prev + 1);
-      setSelected(null);
-    } else {
+  useEffect(() => {
+    if (!loading && timeLeft <= 0 && questions.length > 0) {
+      alert("Time's up! Auto-submitting your quiz.");
+      setShowReview(true);
+    }
+  }, [loading, timeLeft, questions.length, navigate]);
+
+
+  const submitQuiz = async () => {
+
+    try {
+
+      const token =
+        localStorage.getItem('token');
+
+      const formattedAnswers = {};
+
+      questions.forEach((q, index) => {
+
+        formattedAnswers[q._id] =
+          answers[index];
+      });
+
+      await api.post(
+
+        `/quizzes/${quizId}/submit`,
+
+        {
+
+          answers: formattedAnswers,
+
+          startTime: new Date(),
+
+          endTime: new Date()
+
+        },
+
+        {
+
+          headers: {
+
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+      alert(
+        'Quiz submitted successfully!'
+      );
+
       navigate('/leaderboard');
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert('Submission failed');
     }
   };
 
-  const q = MOCK_QUESTIONS[currentQ];
-  const progressPercent = (timeLeft / 60) * 100;
+
+  const handleNext = async () => {
+
+  const nextAnswers = [...answers];
+
+  nextAnswers[currentQ] = selected;
+
+  setAnswers(nextAnswers);
+
+  // NEXT QUESTION
+
+  if (currentQ < questions.length - 1) {
+
+    setCurrentQ(prev => prev + 1);
+
+    setSelected(nextAnswers[currentQ + 1] ?? null);
+
+  }
+
+  // FINAL SUBMIT
+
+  else {
+
+    try {
+
+      const token = localStorage.getItem('token');
+
+      const formattedAnswers = {};
+
+      questions.forEach((q, index) => {
+
+        formattedAnswers[q._id] =
+          nextAnswers[index];
+
+      });
+
+      await api.post(
+
+        `/quizzes/${quizId}/submit`,
+
+        {
+
+          answers: formattedAnswers,
+
+          startTime: new Date(),
+
+          endTime: new Date()
+
+        },
+
+        {
+
+          headers: {
+
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      alert('Quiz submitted successfully!');
+
+      navigate('/leaderboard');
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        error.response?.data?.error ||
+        'Failed to submit quiz'
+      );
+    }
+  }
+};
+
+  if (loading) {
+    return <div className="glass-card" style={{ margin: 'auto' }}>Loading quiz...</div>;
+  }
+
+  if (!questions.length) {
+    return (
+      <div className="glass-card" style={{ margin: 'auto' }}>
+        <h2>No questions found</h2>
+        <p style={{ color: '#666', marginTop: '1rem' }}>This quiz exists, but it does not have generated questions yet.</p>
+      </div>
+    );
+  }
+
+  const q = questions[currentQ];
+  const totalSeconds = (quiz?.durationMinutes || 1) * 60;
+  const progressPercent = Math.max(0, (timeLeft / totalSeconds) * 100);
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+
+  if (showReview) {
+
+    return (
+
+      <div
+        className="glass-card"
+        style={{ margin: 'auto' }}
+      >
+
+        <h2
+          style={{
+            marginBottom: '2rem'
+          }}
+        >
+
+          Review Your Answers
+
+        </h2>
+
+        {questions.map((q, index) => (
+
+          <div
+            key={q._id}
+            style={{
+              marginBottom: '1.5rem',
+              padding: '1rem',
+              borderRadius: '14px',
+              background:
+                'rgba(255,255,255,0.5)'
+            }}
+          >
+
+            <h4>
+              Q{index + 1}.
+              {q.questionText}
+            </h4>
+
+            <p
+              style={{
+                color: '#667eea',
+                fontWeight: '600'
+              }}
+            >
+
+              Selected:
+              {answers[index] !== undefined
+
+                ? q.options[answers[index]]
+
+                : ' Not Answered'}
+
+            </p>
+
+          </div>
+
+        ))}
+
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginTop: '2rem'
+          }}
+        >
+
+          <button
+            className="btn-primary"
+            onClick={() =>
+              setShowReview(false)
+            }
+          >
+
+            Back To Quiz
+
+          </button>
+
+          <button
+            className="btn-primary"
+            onClick={submitQuiz}
+          >
+
+            Final Submit
+
+          </button>
+
+        </div>
+
+      </div>
+    );
+  }
 
   return (
     <div className="glass-card" style={{ margin: 'auto' }}>
+      <h2 style={{ marginBottom: '1rem' }}>{quiz?.title}</h2>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
-        <span style={{ fontWeight: 600, color: '#555' }}>Question {currentQ + 1} of {MOCK_QUESTIONS.length}</span>
+        <span style={{ fontWeight: 600, color: '#555' }}>Question {currentQ + 1} of {questions.length}</span>
         <span style={{ fontWeight: 800, color: '#FF416C', display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <FaClock /> 00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
+          <FaClock /> {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
         </span>
       </div>
       
@@ -49,7 +303,8 @@ export default function QuizArea() {
         <div className="timer-fill" style={{ width: `${progressPercent}%` }}></div>
       </div>
 
-      <div className="question-text">{q.text}</div>
+      {q.section && <p style={{ color: '#764ba2', fontWeight: 700, marginBottom: '0.75rem' }}>{q.section}</p>}
+      <div className="question-text">{q.questionText}</div>
       
       <div className="options-grid">
         {q.options.map((opt, i) => (
@@ -63,10 +318,101 @@ export default function QuizArea() {
         ))}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
-        <button className="btn-primary" onClick={handleNext} disabled={selected === null} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {currentQ === MOCK_QUESTIONS.length - 1 ? 'Submit Assessment' : 'Next Question'} <FaArrowRight />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginTop: '2rem'
+        }}
+      >
+
+      {/* PREVIOUS */}
+
+        <button
+
+          className="btn-primary"
+
+          disabled={currentQ === 0}
+
+          onClick={() => {
+
+            const prevAnswers = [...answers];
+
+            prevAnswers[currentQ] = selected;
+
+            setAnswers(prevAnswers);
+
+            setCurrentQ(prev => prev - 1);
+
+            setSelected(
+              prevAnswers[currentQ - 1] ?? null
+            );
+          }}
+        >
+
+          Previous
+
         </button>
+
+      {/* NEXT / SUBMIT */}
+
+        <button
+
+          className="btn-primary"
+
+          disabled={selected === null}
+
+          onClick={() => {
+
+            const nextAnswers = [...answers];
+
+            nextAnswers[currentQ] = selected;
+
+            setAnswers(nextAnswers);
+
+            // LAST QUESTION
+
+            if (currentQ === questions.length - 1) {
+
+              setShowReview(true);
+
+            }
+
+            // NEXT QUESTION
+
+            else {
+
+              setCurrentQ(prev => prev + 1);
+
+              setSelected(
+                nextAnswers[currentQ + 1] ?? null
+              );
+            }
+          }}
+
+          style={{
+
+            display: 'flex',
+
+            alignItems: 'center',
+
+            gap: '10px'
+          }}
+        >
+
+        {
+
+          currentQ === questions.length - 1
+
+            ? 'Review Answers'
+
+            : 'Next Question'
+        }
+
+        <FaArrowRight />
+
+      </button>
+
       </div>
     </div>
   );
